@@ -12,7 +12,7 @@ pipeline {
           }
       }
       steps {
-        sh "cat './db/init.sql'"
+        sh "sleep 60000"
       }
     }
   }
