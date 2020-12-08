@@ -1,0 +1,97 @@
+version: '3.7'
+
+services:
+
+# ---------------------------------
+# DEVELOPMENT
+# ---------------------------------
+
+  test-db:
+    image: postgres
+    env_file:
+      - ./db/database_test.env
+    volumes:
+      - db-data-test:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  test-server:      
+    env_file:
+      - ./db/database_test.env
+    environment:
+        - PYTHONDONTWRITEBYTECODE=1
+    image: thoughts-backend
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - test-db
+    entrypoint: pytest
+
+# ---------------------------------
+# PIPELINE
+# ---------------------------------
+
+  pipeline-db:
+    image: postgres
+    env_file:
+      - ./db/database_pipeline.env
+    volumes:
+      - db-data-pipeline:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  pipeline-test-server:      
+    env_file:
+      - ./db/database_pipeline.env
+    environment:
+        - PYTHONDONTWRITEBYTECODE=1
+    image: thoughts-backend
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - pipeline-db
+    entrypoint: pytest
+
+  pipeline-static-analysis:
+    image: thoughts-backend
+    build:
+      dockerfile: docker/app/Dockerfile
+      context: .
+    entrypoint: flake8
+
+# ---------------------------------
+# PRODUCTION
+# ---------------------------------
+
+  db:
+    environment:
+        - PYTHONDONTWRITEBYTECODE=1
+    image: postgres
+    env_file:
+      - ./db/database.env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+ 
+  server:
+    env_file:
+      - ./db/database.env
+    environment:
+        - PYTHONDONTWRITEBYTECODE=1
+    image: thoughts-backend
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+ 
+volumes:
+  db-data:
+  db-data-pipeline:
+  db-data-test:

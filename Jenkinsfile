@@ -1,32 +1,18 @@
-def deleteDir() {
-  echo 'in function'
-}
-
 pipeline {
-    agent any
-    stages {
-        stage('No-op') {
-            steps {
-                sh 'ls'
-            }
-        }
+  agent none
+  stages {
+    stage('DB') {
+      agent {
+          docker {
+            image 'postgres:alpine'
+            args '-v db-data-test:/var/lib/postgresql/data'
+            args '-v db-data-test:/var/lib/postgresql/data'
+            args '-v ./db/init.sql:/docker-entrypoint-initdb.d/init.sql'
+          }
+      }
+      steps {
+        sh 'ls'
+      }
     }
-    post {
-        always {
-            echo 'One way or another, I have finished'
-            deleteDir() /* clean up our workspace */
-        }
-        success {
-            echo 'I succeeded!'
-        }
-        unstable {
-            echo 'I am unstable :/'
-        }
-        failure {
-            echo 'I failed :('
-        }
-        changed {
-            echo 'Things were different before...'
-        }
-    }
+  }
 }
