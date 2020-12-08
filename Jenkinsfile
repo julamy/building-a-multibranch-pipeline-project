@@ -9,7 +9,7 @@ pipeline {
           }
       }
       steps {
-        cat './db/init.sql'
+        sh "cat './db/init.sql'"
       }
     }
   }
