@@ -6,8 +6,6 @@ pipeline {
           docker {
             image 'postgres:alpine'
             args '-v db-data-test:/var/lib/postgresql/data'
-            args '-v db-data-test:/var/lib/postgresql/data'
-            args '-v ./db/init.sql:/docker-entrypoint-initdb.d/init.sql'
           }
       }
       steps {
